@@ -1,0 +1,35 @@
+name: Prepare and publish Ika Store
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ika_store_website_waguri_facebook.zip'
+      - '.github/workflows/publish-ika-store.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract website archive
+        run: |
+          mkdir -p site
+          unzip -o ika_store_website_waguri_facebook.zip -d extracted
+          test -f extracted/ika_store_website/index.html
+          cp -R extracted/ika_store_website/. site/
+          test -f site/index.html
+
+      - name: Publish website files to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./site
+          force_orphan: true
